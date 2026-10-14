@@ -1,3 +1,4 @@
+import hmac
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
@@ -6,7 +7,7 @@ from urllib.parse import urlencode
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import FileResponse
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -122,7 +123,6 @@ async def require_api_key(
     except RuntimeError as exc:
         logger.error("API key pepper is not configured securely.")
         raise HTTPException(status_code=503, detail="API authentication is not configured.") from exc
-    import hmac
 
     if not hmac.compare_digest(api_key.secret_hash, candidate_hash):
         raise unauthorized()
