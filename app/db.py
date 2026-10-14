@@ -13,7 +13,7 @@ from app.models import Base
 
 if settings.database_url.startswith("sqlite"):
     # SQLite's parent folder is not created automatically.
-    sqlite_path = settings.database_url.rsplit("/", 1)[-1]
+    sqlite_path = settings.database_url.split("///", 1)[-1]
     if sqlite_path and sqlite_path != ":memory:":
         Path(sqlite_path).parent.mkdir(parents=True, exist_ok=True)
 
