@@ -37,7 +37,7 @@ async def enforce_rate_limit(identity: str, limit: int) -> None:
         script = (
             "redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', ARGV[1] - 60000); "
             "local count = redis.call('ZCARD', KEYS[1]); "
-            "if count >= tonumber(ARGV[2]) then return count end; "
+            "if count >= tonumber(ARGV[2]) then return -1 end; "
             "redis.call('ZADD', KEYS[1], ARGV[1], ARGV[3]); "
             "redis.call('PEXPIRE', KEYS[1], 120000); "
             "return count + 1"
@@ -45,9 +45,8 @@ async def enforce_rate_limit(identity: str, limit: int) -> None:
         try:
             count = int(await _redis.eval(script, 1, bucket_key, int(now * 1000), limit, member))
         except Exception as exc:
-            # Fail closed when shared rate limiting is configured but unavailable.
             raise HTTPException(status_code=503, detail="Rate-limit service unavailable.") from exc
-        if count > limit:
+        if count < 0:
             raise HTTPException(
                 status_code=429,
                 detail="Rate limit exceeded. Try again shortly.",
