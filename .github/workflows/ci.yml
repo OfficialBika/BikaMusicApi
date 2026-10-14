@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Lint
+        run: ruff check app bot scripts tests
+      - name: Test
+        env:
+          API_KEY_PEPPER: test-api-key-pepper-0123456789-abcdefghijklmnopqrstuvwxyz
+          PLAYBACK_SIGNING_SECRET: test-playback-signing-secret-0123456789-abcdefghijklmnopqrstuvwxyz
+        run: pytest -q
