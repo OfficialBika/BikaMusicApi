@@ -18,9 +18,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Lint
-        run: ruff check app bot scripts tests
+        run: ruff check app bot scripts tests examples
+      - name: Import smoke check
+        env:
+          API_KEY_PEPPER: test-api-key-pepper-0123456789-abcdefghijklmnopqrstuvwxyz
+          PLAYBACK_SIGNING_SECRET: test-playback-signing-secret-0123456789-abcdefghijklmnopqrstuvwxyz
+        run: python -c "from app.main import app; from bot.main import main; print(app.title)"
       - name: Test
         env:
           API_KEY_PEPPER: test-api-key-pepper-0123456789-abcdefghijklmnopqrstuvwxyz
           PLAYBACK_SIGNING_SECRET: test-playback-signing-secret-0123456789-abcdefghijklmnopqrstuvwxyz
         run: pytest -q
+      - name: Build container image
+        run: docker build --tag bika-music-api:ci .
